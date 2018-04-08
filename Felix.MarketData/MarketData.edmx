@@ -1,0 +1,416 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="FelixMarketModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Bars">
+          <Key>
+            <PropertyRef Name="BarId" />
+          </Key>
+          <Property Name="BarId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ContractId" Type="int" Nullable="false" />
+          <Property Name="Open" Type="float" Nullable="false" />
+          <Property Name="High" Type="float" Nullable="false" />
+          <Property Name="Low" Type="float" Nullable="false" />
+          <Property Name="Close" Type="float" Nullable="false" />
+          <Property Name="Volume" Type="int" />
+          <Property Name="Period" Type="int" Nullable="false" />
+          <Property Name="Time" Type="datetime" Nullable="false" />
+          <Property Name="Index" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Contracts">
+          <Key>
+            <PropertyRef Name="ContractId" />
+          </Key>
+          <Property Name="ContractId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MarketId" Type="int" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Symbol" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="BeginDate" Type="date" Nullable="false" />
+          <Property Name="EndDate" Type="date" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Markets">
+          <Key>
+            <PropertyRef Name="MarketId" />
+          </Key>
+          <Property Name="MarketId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Exchange" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Symbol" Type="nvarchar" MaxLength="10" Nullable="false" />
+          <Property Name="TickSize" Type="money" Nullable="false" />
+          <Property Name="Months" Type="nvarchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="MetaMappings">
+          <Key>
+            <PropertyRef Name="MetaMappingId" />
+          </Key>
+          <Property Name="MetaMappingId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MarketId" Type="int" Nullable="false" />
+          <Property Name="Property" Type="nvarchar" MaxLength="10" Nullable="false" />
+          <Property Name="Value" Type="int" />
+          <Property Name="DValue" Type="float" />
+        </EntityType>
+        <EntityType Name="Moves">
+          <Key>
+            <PropertyRef Name="MoveId" />
+          </Key>
+          <Property Name="MoveId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="StartBarId" Type="int" Nullable="false" />
+          <Property Name="EndBarId" Type="int" />
+          <Property Name="TrendId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Trends">
+          <Key>
+            <PropertyRef Name="TrendId" />
+          </Key>
+          <Property Name="TrendId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="10" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Bars_Contracts">
+          <End Role="Contracts" Type="Self.Contracts" Multiplicity="1" />
+          <End Role="Bars" Type="Self.Bars" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Contracts">
+              <PropertyRef Name="ContractId" />
+            </Principal>
+            <Dependent Role="Bars">
+              <PropertyRef Name="ContractId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Contracts_Markets">
+          <End Role="Markets" Type="Self.Markets" Multiplicity="1" />
+          <End Role="Contracts" Type="Self.Contracts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Markets">
+              <PropertyRef Name="MarketId" />
+            </Principal>
+            <Dependent Role="Contracts">
+              <PropertyRef Name="MarketId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_MetaMappings_Markets">
+          <End Role="Markets" Type="Self.Markets" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="MetaMappings" Type="Self.MetaMappings" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Markets">
+              <PropertyRef Name="MarketId" />
+            </Principal>
+            <Dependent Role="MetaMappings">
+              <PropertyRef Name="MarketId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Moves_Trends">
+          <End Role="Trends" Type="Self.Trends" Multiplicity="1" />
+          <End Role="Moves" Type="Self.Moves" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Trends">
+              <PropertyRef Name="TrendId" />
+            </Principal>
+            <Dependent Role="Moves">
+              <PropertyRef Name="TrendId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Function Name="MovesGet" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="contractId" Type="int" Mode="In" />
+          <Parameter Name="period" Type="int" Mode="In" />
+          <Parameter Name="StartTime" Type="datetime" Mode="In" />
+        </Function>
+        <EntityContainer Name="FelixMarketModelStoreContainer">
+          <EntitySet Name="Bars" EntityType="Self.Bars" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Contracts" EntityType="Self.Contracts" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Markets" EntityType="Self.Markets" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="MetaMappings" EntityType="Self.MetaMappings" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Moves" EntityType="Self.Moves" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Trends" EntityType="Self.Trends" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Bars_Contracts" Association="Self.FK_Bars_Contracts">
+            <End Role="Contracts" EntitySet="Contracts" />
+            <End Role="Bars" EntitySet="Bars" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Contracts_Markets" Association="Self.FK_Contracts_Markets">
+            <End Role="Markets" EntitySet="Markets" />
+            <End Role="Contracts" EntitySet="Contracts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_MetaMappings_Markets" Association="Self.FK_MetaMappings_Markets">
+            <End Role="Markets" EntitySet="Markets" />
+            <End Role="MetaMappings" EntitySet="MetaMappings" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Moves_Trends" Association="Self.FK_Moves_Trends">
+            <End Role="Trends" EntitySet="Trends" />
+            <End Role="Moves" EntitySet="Moves" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="FelixMarketModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Bar">
+          <Key>
+            <PropertyRef Name="BarId" />
+          </Key>
+          <Property Name="BarId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ContractId" Type="Int32" Nullable="false" />
+          <Property Name="Open" Type="Double" Nullable="false" />
+          <Property Name="High" Type="Double" Nullable="false" />
+          <Property Name="Low" Type="Double" Nullable="false" />
+          <Property Name="Close" Type="Double" Nullable="false" />
+          <Property Name="Volume" Type="Int32" />
+          <Property Name="Period" Type="Int32" Nullable="false" />
+          <Property Name="Time" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Index" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Contract" Relationship="Self.FK_Bars_Contracts" FromRole="Bars" ToRole="Contracts" />
+          </EntityType>
+        <EntityType Name="Contract">
+          <Key>
+            <PropertyRef Name="ContractId" />
+          </Key>
+          <Property Name="ContractId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketId" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Symbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="BeginDate" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="EndDate" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Bars" Relationship="Self.FK_Bars_Contracts" FromRole="Contracts" ToRole="Bars" />
+          <NavigationProperty Name="Market" Relationship="Self.FK_Contracts_Markets" FromRole="Contracts" ToRole="Markets" />
+        </EntityType>
+        <EntityType Name="Market">
+          <Key>
+            <PropertyRef Name="MarketId" />
+          </Key>
+          <Property Name="MarketId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Exchange" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Symbol" Type="String" MaxLength="10" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="TickSize" Type="Decimal" Precision="19" Scale="4" Nullable="false" />
+          <Property Name="Months" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="Contracts" Relationship="Self.FK_Contracts_Markets" FromRole="Markets" ToRole="Contracts" />
+          <NavigationProperty Name="MetaMappings" Relationship="FelixMarketModel.FK_MetaMappings_Markets" FromRole="Market" ToRole="MetaMapping" />
+        </EntityType>
+        <Association Name="FK_Bars_Contracts">
+          <End Role="Contracts" Type="Self.Contract" Multiplicity="1" />
+          <End Role="Bars" Type="Self.Bar" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Contracts">
+              <PropertyRef Name="ContractId" />
+            </Principal>
+            <Dependent Role="Bars">
+              <PropertyRef Name="ContractId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Contracts_Markets">
+          <End Role="Markets" Type="Self.Market" Multiplicity="1" />
+          <End Role="Contracts" Type="Self.Contract" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Markets">
+              <PropertyRef Name="MarketId" />
+            </Principal>
+            <Dependent Role="Contracts">
+              <PropertyRef Name="MarketId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="FelixMarketEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Bars" EntityType="Self.Bar" />
+          <EntitySet Name="Contracts" EntityType="Self.Contract" />
+          <EntitySet Name="Markets" EntityType="Self.Market" />
+          <AssociationSet Name="FK_Bars_Contracts" Association="Self.FK_Bars_Contracts">
+            <End Role="Contracts" EntitySet="Contracts" />
+            <End Role="Bars" EntitySet="Bars" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Contracts_Markets" Association="Self.FK_Contracts_Markets">
+            <End Role="Markets" EntitySet="Markets" />
+            <End Role="Contracts" EntitySet="Contracts" />
+          </AssociationSet>
+          <EntitySet Name="MetaMappings" EntityType="FelixMarketModel.MetaMapping" />
+          <AssociationSet Name="FK_MetaMappings_Markets" Association="FelixMarketModel.FK_MetaMappings_Markets">
+            <End Role="Market" EntitySet="Markets" />
+            <End Role="MetaMapping" EntitySet="MetaMappings" />
+          </AssociationSet>
+          <EntitySet Name="Trends" EntityType="FelixMarketModel.Trend" />
+          <EntitySet Name="Moves" EntityType="FelixMarketModel.Move" />
+          <AssociationSet Name="FK_Moves_Trends" Association="FelixMarketModel.FK_Moves_Trends">
+            <End Role="Trend" EntitySet="Trends" />
+            <End Role="Move" EntitySet="Moves" />
+          </AssociationSet>
+          <FunctionImport Name="MovesGet" EntitySet="Moves" ReturnType="Collection(FelixMarketModel.Move)">
+            <Parameter Name="contractId" Mode="In" Type="Int32" />
+            <Parameter Name="period" Mode="In" Type="Int32" />
+            <Parameter Name="StartTime" Mode="In" Type="DateTime" />
+          </FunctionImport>
+          </EntityContainer>
+        <EntityType Name="MetaMapping">
+          <Key>
+            <PropertyRef Name="MetaMappingId" />
+          </Key>
+          <Property Name="MetaMappingId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketId" Type="Int32" Nullable="false" />
+          <Property Name="Property" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="Int32" />
+          <NavigationProperty Name="Market" Relationship="FelixMarketModel.FK_MetaMappings_Markets" FromRole="MetaMapping" ToRole="Market" />
+          <Property Name="DValue" Type="Double" />
+        </EntityType>
+        <Association Name="FK_MetaMappings_Markets">
+          <End Type="FelixMarketModel.Market" Role="Market" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="FelixMarketModel.MetaMapping" Role="MetaMapping" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Market">
+              <PropertyRef Name="MarketId" />
+            </Principal>
+            <Dependent Role="MetaMapping">
+              <PropertyRef Name="MarketId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Trend">
+          <Key>
+            <PropertyRef Name="TrendId" />
+          </Key>
+          <Property Name="TrendId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Description" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Moves" Relationship="FelixMarketModel.FK_Moves_Trends" FromRole="Trend" ToRole="Move" />
+        </EntityType>
+        <EntityType Name="Move">
+          <Key>
+            <PropertyRef Name="MoveId" />
+          </Key>
+          <Property Name="MoveId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="StartBarId" Type="Int32" Nullable="false" />
+          <Property Name="EndBarId" Type="Int32" />
+          <Property Name="TrendId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Trend" Relationship="FelixMarketModel.FK_Moves_Trends" FromRole="Move" ToRole="Trend" />
+          </EntityType>
+        <Association Name="FK_Moves_Trends">
+          <End Type="FelixMarketModel.Trend" Role="Trend" Multiplicity="1" />
+          <End Type="FelixMarketModel.Move" Role="Move" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Trend">
+              <PropertyRef Name="TrendId" />
+            </Principal>
+            <Dependent Role="Move">
+              <PropertyRef Name="TrendId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <ComplexType Name="MovesGet_Result">
+          <Property Type="Int32" Name="MoveId" Nullable="false" />
+          <Property Type="Int32" Name="StartBarId" Nullable="false" />
+          <Property Type="Int32" Name="EndBarId" Nullable="true" />
+          <Property Type="Int32" Name="TrendId" Nullable="false" />
+        </ComplexType>
+        <ComplexType Name="MoveUpdate_Result">
+          <Property Type="Int32" Name="MoveId" Nullable="false" />
+          <Property Type="Int32" Name="StartBarId" Nullable="false" />
+          <Property Type="Int32" Name="EndBarId" Nullable="true" />
+          <Property Type="Int32" Name="TrendId" Nullable="false" />
+        </ComplexType>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="FelixMarketModelStoreContainer" CdmEntityContainer="FelixMarketEntities">
+          <EntitySetMapping Name="Bars">
+            <EntityTypeMapping TypeName="FelixMarketModel.Bar">
+              <MappingFragment StoreEntitySet="Bars">
+                <ScalarProperty Name="BarId" ColumnName="BarId" />
+                <ScalarProperty Name="ContractId" ColumnName="ContractId" />
+                <ScalarProperty Name="Open" ColumnName="Open" />
+                <ScalarProperty Name="High" ColumnName="High" />
+                <ScalarProperty Name="Low" ColumnName="Low" />
+                <ScalarProperty Name="Close" ColumnName="Close" />
+                <ScalarProperty Name="Volume" ColumnName="Volume" />
+                <ScalarProperty Name="Period" ColumnName="Period" />
+                <ScalarProperty Name="Time" ColumnName="Time" />
+                <ScalarProperty Name="Index" ColumnName="Index" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Contracts">
+            <EntityTypeMapping TypeName="FelixMarketModel.Contract">
+              <MappingFragment StoreEntitySet="Contracts">
+                <ScalarProperty Name="ContractId" ColumnName="ContractId" />
+                <ScalarProperty Name="MarketId" ColumnName="MarketId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Symbol" ColumnName="Symbol" />
+                <ScalarProperty Name="BeginDate" ColumnName="BeginDate" />
+                <ScalarProperty Name="EndDate" ColumnName="EndDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Markets">
+            <EntityTypeMapping TypeName="FelixMarketModel.Market">
+              <MappingFragment StoreEntitySet="Markets">
+                <ScalarProperty Name="MarketId" ColumnName="MarketId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Exchange" ColumnName="Exchange" />
+                <ScalarProperty Name="Symbol" ColumnName="Symbol" />
+                <ScalarProperty Name="TickSize" ColumnName="TickSize" />
+                <ScalarProperty Name="Months" ColumnName="Months" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="MetaMappings">
+            <EntityTypeMapping TypeName="FelixMarketModel.MetaMapping">
+              <MappingFragment StoreEntitySet="MetaMappings">
+                <ScalarProperty Name="DValue" ColumnName="DValue" />
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Property" ColumnName="Property" />
+                <ScalarProperty Name="MarketId" ColumnName="MarketId" />
+                <ScalarProperty Name="MetaMappingId" ColumnName="MetaMappingId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Trends">
+            <EntityTypeMapping TypeName="FelixMarketModel.Trend">
+              <MappingFragment StoreEntitySet="Trends">
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="TrendId" ColumnName="TrendId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Moves">
+            <EntityTypeMapping TypeName="FelixMarketModel.Move">
+              <MappingFragment StoreEntitySet="Moves">
+                <ScalarProperty Name="TrendId" ColumnName="TrendId" />
+                <ScalarProperty Name="EndBarId" ColumnName="EndBarId" />
+                <ScalarProperty Name="StartBarId" ColumnName="StartBarId" />
+                <ScalarProperty Name="MoveId" ColumnName="MoveId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="MovesGet" FunctionName="FelixMarketModel.Store.MovesGet">
+          </FunctionImportMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
